@@ -1,10 +1,12 @@
 import ExcelJS from 'exceljs';
 import { improvementThreshold } from '@/lib/db';
 import { RISK_FIELDS, searchRisks } from '@/lib/risk';
+import { currentUser } from '@/lib/auth';
 import { currentYear } from '@/lib/year';
 
 // 대장 화면의 조건 그대로 엑셀로 내보낸다. 열 순서는 기존 "위험성평가_수정추가" 시트와 같게.
 export async function GET(req) {
+  if (!(await currentUser())) return new Response('로그인이 필요합니다.', { status: 401 });
   const sp = Object.fromEntries(new URL(req.url).searchParams);
   const year = await currentYear();
   const th = improvementThreshold();

@@ -4,9 +4,11 @@ import RiskForm from '@/components/RiskForm';
 import { improvementThreshold } from '@/lib/db';
 import { FIELD_LABEL, getHistory, getPhotos, getRisk, listCodes, listProcesses } from '@/lib/risk';
 import { isClosed } from '@/lib/year';
+import { requireUser } from '@/lib/auth';
 import { setDeleted, setVisibility, updateRisk } from '../actions';
 
 export default async function RiskDetail({ params, searchParams }) {
+  const user = await requireUser();
   const { id } = await params;
   const sp = await searchParams;
   const item = getRisk(Number(id));
@@ -26,7 +28,7 @@ export default async function RiskDetail({ params, searchParams }) {
       {sp.saved && <div className="notice">저장했습니다.</div>}
       {closed && <div className="notice">{item.year}년은 마감되어 읽기 전용입니다.</div>}
 
-      {!closed && (
+      {!closed && user.role === 'admin' && (
         <div className="form-actions" style={{ marginTop: 0, marginBottom: 16 }}>
           <form action={setVisibility}>
             <input type="hidden" name="id" value={item.id} />
@@ -81,7 +83,7 @@ export default async function RiskDetail({ params, searchParams }) {
               const changes = h.changes ? JSON.parse(h.changes) : {};
               return (
                 <li key={h.id}>
-                  <b>{h.at}</b> {h.action}
+                  <b>{h.at}</b> {h.user_name ? `${h.user_name} · ` : ''}{h.action}
                   {Object.entries(changes).map(([k, [a, b]]) => (
                     <div key={k} style={{ marginLeft: 16, color: 'var(--ink-soft)' }}>
                       {FIELD_LABEL[k] ?? k}: {a ?? '(빈칸)'} → {b ?? '(빈칸)'}

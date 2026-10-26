@@ -1,8 +1,10 @@
+import { requireUser } from '@/lib/auth';
 import Link from 'next/link';
 import { getDb, improvementThreshold } from '@/lib/db';
 import { currentYear } from '@/lib/year';
 
 export default async function ProcessesPage() {
+  await requireUser();
   const year = await currentYear();
   const th = improvementThreshold();
   const procs = getDb()

@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth';
 import Link from 'next/link';
 import RiskForm from '@/components/RiskForm';
 import { improvementThreshold } from '@/lib/db';
@@ -6,6 +7,7 @@ import { currentYear, isClosed } from '@/lib/year';
 import { createRisk } from '../actions';
 
 export default async function NewRisk({ searchParams }) {
+  await requireUser();
   const sp = await searchParams;
   const year = await currentYear();
   return (

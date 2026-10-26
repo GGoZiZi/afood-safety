@@ -1,7 +1,10 @@
 import { getDb } from '@/lib/db';
+import { requireUser } from '@/lib/auth';
 import { createYear, toggleClosed } from './actions';
 
-export default function YearsPage() {
+export default async function YearsPage() {
+  const user = await requireUser();
+  const admin = user.role === 'admin';
   const years = getDb()
     .prepare(`SELECT y.*,
         (SELECT COUNT(*) FROM processes p WHERE p.year = y.year) AS procs,
@@ -29,10 +32,10 @@ export default function YearsPage() {
                 <td className="num">{y.risks}</td>
                 <td>{y.closed ? <span className="chip hidden">마감</span> : <span className="chip ok">진행중</span>}</td>
                 <td>
-                  <form action={toggleClosed}>
+                  {admin && <form action={toggleClosed}>
                     <input type="hidden" name="year" value={y.year} />
                     <button className="btn small" type="submit">{y.closed ? '마감 해제' : '마감'}</button>
-                  </form>
+                  </form>}
                 </td>
               </tr>
             ))}
@@ -43,7 +46,7 @@ export default function YearsPage() {
         </table>
       </div>
 
-      <form action={createYear} className="card">
+      {admin && <form action={createYear} className="card">
         <h2 style={{ marginTop: 0 }}>새 평가연도 만들기</h2>
         <div className="filters" style={{ border: 0, padding: 0 }}>
           <label>연도<input type="number" name="year" required defaultValue={latest ? latest + 1 : new Date().getFullYear()} /></label>
@@ -55,7 +58,7 @@ export default function YearsPage() {
           </label>
           <button className="btn primary" type="submit">만들기</button>
         </div>
-      </form>
+      </form>}
     </main>
   );
 }

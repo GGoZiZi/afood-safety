@@ -4,6 +4,7 @@ import { listDepts, listProcesses, riskSummary, searchRisks } from '@/lib/risk';
 import { currentYear, isClosed } from '@/lib/year';
 import { riskClass } from '@/lib/format';
 import { setVisibility } from './actions';
+import { requireUser } from '@/lib/auth';
 
 const STATUS_CHIP = { 신규: 'new', 수정: 'edit', 기존: 'old' };
 
@@ -14,6 +15,7 @@ function query(params, patch) {
 }
 
 export default async function RiskLedger({ searchParams }) {
+  const user = await requireUser();
   const sp = await searchParams;
   const filters = {
     dept: sp.dept || '', process: sp.process || '', minRisk: sp.minRisk || '', vis: sp.vis || '',
@@ -132,7 +134,7 @@ export default async function RiskLedger({ searchParams }) {
                 <td style={{ whiteSpace: 'nowrap' }}>{r.due_date}</td>
                 <td className="num">{r.photo_count || ''}</td>
                 <td>
-                  {closed || r.deleted ? (
+                  {closed || r.deleted || user.role !== 'admin' ? (
                     r.visibility
                   ) : (
                     <form action={setVisibility}>
