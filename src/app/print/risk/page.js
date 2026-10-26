@@ -1,3 +1,4 @@
+import { requireUser } from '@/lib/auth';
 import { improvementThreshold } from '@/lib/db';
 import { riskClass } from '@/lib/format';
 import { listProcesses, searchRisks } from '@/lib/risk';
@@ -6,6 +7,7 @@ import PrintButton from '@/components/PrintButton';
 
 // 엑셀 "위험성평가표" 시트와 같은 모양: 공정마다 머리표 + 16칸 표. 미공개 항목은 빠진다.
 export default async function PrintRisk({ searchParams }) {
+  await requireUser();
   const sp = await searchParams;
   const year = await currentYear();
   const th = improvementThreshold();

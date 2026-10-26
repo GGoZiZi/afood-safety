@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
+import { migrate } from './migrate.mjs';
 
 // 데이터 파일 위치. 기본값은 프로젝트의 data/afood.db (백업은 이 파일만 복사하면 된다)
 export const DATA_DIR = process.env.AFOOD_DATA_DIR || path.join(process.cwd(), 'data');
@@ -13,6 +14,7 @@ export function openDb(file = DB_PATH) {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.exec(fs.readFileSync(SCHEMA_PATH, 'utf8'));
+  migrate(db);
   return db;
 }
 

@@ -111,3 +111,117 @@ CREATE TABLE IF NOT EXISTS history (
   at          TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
 CREATE INDEX IF NOT EXISTS idx_history_row ON history(table_name, row_id);
+
+-- ===== 2단계: 사용자 · TBM · 재해사례 =====
+
+CREATE TABLE IF NOT EXISTS users (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  name      TEXT NOT NULL UNIQUE,
+  role      TEXT NOT NULL DEFAULT 'supervisor',  -- admin(안전보건담당자) / supervisor(관리감독자)
+  dept      TEXT,                                -- 관리감독자의 TBM 부서
+  pin_hash  TEXT NOT NULL,
+  active    INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  token       TEXT PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES users(id),
+  created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+-- TBM 부서 설정 (물류파트, 품질관리팀, 생산1팀, 생산2팀, 공무팀)
+CREATE TABLE IF NOT EXISTS tbm_depts (
+  code          TEXT PRIMARY KEY,
+  sort          INTEGER NOT NULL DEFAULT 0,
+  place         TEXT,                          -- TBM 장소
+  work_name     TEXT,                          -- 작업명 기본값
+  leader_affil  TEXT,                          -- TBM 리더 소속
+  leader_title  TEXT,                          -- 직책
+  leader_name   TEXT,                          -- 성명
+  weekdays      TEXT NOT NULL DEFAULT '1,2,3,4,5', -- 실시 요일 (월=1 … 일=7)
+  active        INTEGER NOT NULL DEFAULT 1
+);
+
+-- TBM 참석 대상자 (부서별 팀원)
+CREATE TABLE IF NOT EXISTS tbm_members (
+  id      INTEGER PRIMARY KEY AUTOINCREMENT,
+  dept    TEXT NOT NULL REFERENCES tbm_depts(code),
+  name    TEXT NOT NULL,
+  lang    TEXT NOT NULL DEFAULT 'ko',          -- ko / zh / vi / ru / en
+  sort    INTEGER NOT NULL DEFAULT 0,
+  active  INTEGER NOT NULL DEFAULT 1,
+  UNIQUE (dept, name)
+);
+
+CREATE TABLE IF NOT EXISTS tbm_meetings (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  year          INTEGER NOT NULL,
+  dept          TEXT NOT NULL REFERENCES tbm_depts(code),
+  date          TEXT NOT NULL,                 -- YYYY-MM-DD
+  seq           INTEGER NOT NULL,              -- 그 해 그 부서의 몇 번째 TBM (위험요인 순환 위치)
+  time_text     TEXT,
+  work_name     TEXT,
+  work_content  TEXT,
+  place         TEXT,
+  ra_done       INTEGER NOT NULL DEFAULT 1,    -- 위험성평가 실시여부
+  near_miss     TEXT,                          -- 아차사고 및 근로자 의견 청취
+  case_text     TEXT,                          -- 사고사례 공유 (비우면 재해사례에서 자동)
+  special_note  TEXT,                          -- 특기사항
+  status        TEXT NOT NULL DEFAULT '작성중', -- 작성중 / 완료
+  completed_at  TEXT,
+  completed_by  TEXT,
+  created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  updated_at    TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  UNIQUE (dept, date)
+);
+
+CREATE TABLE IF NOT EXISTS tbm_items (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  meeting_id    INTEGER NOT NULL REFERENCES tbm_meetings(id) ON DELETE CASCADE,
+  slot          INTEGER NOT NULL,              -- 1~4
+  risk_item_id  INTEGER REFERENCES risk_items(id),
+  hazard        TEXT NOT NULL,
+  measure       TEXT,
+  UNIQUE (meeting_id, slot)
+);
+
+CREATE TABLE IF NOT EXISTS tbm_attendance (
+  meeting_id  INTEGER NOT NULL REFERENCES tbm_meetings(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  status      TEXT NOT NULL DEFAULT '참석',    -- 참석 / 연차 / 반차 / 교육 / 공가 / 출장 / 기타
+  sort        INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (meeting_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS tbm_history (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  meeting_id  INTEGER NOT NULL REFERENCES tbm_meetings(id) ON DELETE CASCADE,
+  user_name   TEXT,
+  action      TEXT NOT NULL,
+  detail      TEXT,
+  at          TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+-- 산업재해사례. share_from부터 share_days일 동안 해당 부서 TBM "사고사례 공유"에 자동 포함
+CREATE TABLE IF NOT EXISTS accident_cases (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  category     TEXT,                           -- 식품업계 / 물류 / 실험실 / 설비 / 화재 …
+  title        TEXT NOT NULL,                  -- 한 줄 요약 (TBM에 들어가는 문장)
+  occurred_on  TEXT,
+  share_from   TEXT,                           -- TBM 공유 시작일
+  share_days   INTEGER NOT NULL DEFAULT 7,
+  depts        TEXT NOT NULL DEFAULT '전체',   -- 쉼표 구분 TBM 부서, 또는 전체
+  summary      TEXT,                           -- 사고 개요
+  cause        TEXT,                           -- 원인
+  prevention   TEXT,                           -- 예방대책 (우리 사업장 적용)
+  source       TEXT,
+  url          TEXT,
+  status       TEXT NOT NULL DEFAULT '채택',   -- 검토대기 / 채택 / 제외
+  created_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS case_seen (
+  user_id  INTEGER NOT NULL,
+  case_id  INTEGER NOT NULL,
+  PRIMARY KEY (user_id, case_id)
+);

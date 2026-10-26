@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import XLSX from 'xlsx';
+import { migrate } from '../src/lib/migrate.mjs';
 
 const args = process.argv.slice(2);
 const replace = args.includes('--replace');
@@ -30,6 +31,7 @@ const db = new Database(path.join(dataDir, 'afood.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 db.exec(fs.readFileSync(path.join(process.cwd(), 'src', 'lib', 'schema.sql'), 'utf8'));
+migrate(db);
 
 const wb = XLSX.readFile(file, { cellDates: true });
 

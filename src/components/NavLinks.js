@@ -7,12 +7,12 @@ import { usePathname } from 'next/navigation';
 const MENU = [
   { href: '/risk', label: '위험성평가 대장' },
   { href: '/processes', label: '공정' },
-  { href: '/tbm', label: 'TBM', soon: true },
+  { href: '/tbm', label: 'TBM' },
   { href: '/actions', label: '개선조치', soon: true },
   { href: '/patrol', label: '순회점검', soon: true },
   { href: '/equipment', label: '설비·안전인증', soon: true },
   { href: '/msds', label: 'MSDS', soon: true },
-  { href: '/cases', label: '재해사례', soon: true },
+  { href: '/cases', label: '재해사례' },
   { href: '/budget', label: '예산', soon: true },
   { href: '/years', label: '연도 관리' },
 ];

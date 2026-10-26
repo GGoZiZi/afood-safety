@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getDb } from '@/lib/db';
+import { requireAdmin, requireUser } from '@/lib/auth';
 import { getRisk, nextItemCode } from '@/lib/risk';
 import { isClosed } from '@/lib/year';
 
@@ -28,10 +29,10 @@ function readForm(formData) {
   return row;
 }
 
-function logHistory(rowId, action, changes) {
+function logHistory(user, rowId, action, changes) {
   getDb()
-    .prepare("INSERT INTO history (table_name, row_id, action, changes) VALUES ('risk_items', ?, ?, ?)")
-    .run(rowId, action, changes ? JSON.stringify(changes) : null);
+    .prepare("INSERT INTO history (table_name, row_id, action, changes, user_name) VALUES ('risk_items', ?, ?, ?, ?)")
+    .run(rowId, action, changes ? JSON.stringify(changes) : null, user.name);
 }
 
 function assertOpen(year) {
@@ -39,6 +40,7 @@ function assertOpen(year) {
 }
 
 export async function createRisk(formData) {
+  const user = await requireUser();
   const year = Number(formData.get('year'));
   assertOpen(year);
   const processCode = clean(formData.get('process_code'));
@@ -61,12 +63,13 @@ export async function createRisk(formData) {
       process_name: row.process_name ?? proc?.name ?? null,
       sub_task: row.sub_task ?? proc?.sub_task ?? null,
     });
-  logHistory(info.lastInsertRowid, '추가', null);
+  logHistory(user, info.lastInsertRowid, '추가', null);
   revalidatePath('/risk');
   redirect(`/risk/${info.lastInsertRowid}?saved=1`);
 }
 
 export async function updateRisk(formData) {
+  const user = await requireUser();
   const id = Number(formData.get('id'));
   const before = getRisk(id);
   if (!before) throw new Error('항목을 찾을 수 없습니다.');
@@ -87,31 +90,33 @@ export async function updateRisk(formData) {
   getDb()
     .prepare(`UPDATE risk_items SET ${sets}, work_status = @status, updated_at = datetime('now','localtime') WHERE id = @id`)
     .run({ ...row, status, id });
-  logHistory(id, '수정', changes);
+  logHistory(user, id, '수정', changes);
   revalidatePath('/risk');
   redirect(`/risk/${id}?saved=1`);
 }
 
 export async function setVisibility(formData) {
+  const user = await requireAdmin();
   const id = Number(formData.get('id'));
   const vis = formData.get('visibility') === '미공개' ? '미공개' : '공개';
   const before = getRisk(id);
   if (!before || before.visibility === vis) return;
   assertOpen(before.year);
   getDb().prepare("UPDATE risk_items SET visibility = ?, updated_at = datetime('now','localtime') WHERE id = ?").run(vis, id);
-  logHistory(id, vis, { visibility: [before.visibility, vis] });
+  logHistory(user, id, vis, { visibility: [before.visibility, vis] });
   revalidatePath('/risk');
   revalidatePath(`/risk/${id}`);
 }
 
 export async function setDeleted(formData) {
+  const user = await requireAdmin();
   const id = Number(formData.get('id'));
   const del = formData.get('deleted') === '1' ? 1 : 0;
   const before = getRisk(id);
   if (!before) return;
   assertOpen(before.year);
   getDb().prepare("UPDATE risk_items SET deleted = ?, updated_at = datetime('now','localtime') WHERE id = ?").run(del, id);
-  logHistory(id, del ? '삭제' : '복구', null);
+  logHistory(user, id, del ? '삭제' : '복구', null);
   revalidatePath('/risk');
   redirect(del ? '/risk' : `/risk/${id}`);
 }
