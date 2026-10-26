@@ -1,0 +1,163 @@
+/* 색상: A안 (진한 회색 + 안전 오렌지), 화면 구성: B안 (엑셀 대장형) */
+:root {
+  --ink: #1f2328;
+  --ink-soft: #57606a;
+  --ground: #f6f5f2;
+  --panel: #ffffff;
+  --line: #d0d7de;
+  --line-soft: #eaeef2;
+  --accent: #f5a524;
+  --accent-ink: #1f2328;
+  --accent-soft: #fff4e5;
+  --danger: #9b1c1c;
+  --danger-soft: #fde2e1;
+  --ok: #116329;
+  --ok-soft: #dafbe1;
+  --muted-soft: #f0f1f3;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  background: var(--ground);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+a { color: #9a3c00; }
+a:hover { color: #6b2900; }
+
+/* 상단 메뉴 */
+.topbar {
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  padding: 0 20px;
+  min-height: 56px;
+}
+.topbar .brand { font-weight: 700; font-size: 16px; color: #fff; text-decoration: none; }
+.topbar nav { display: flex; flex-wrap: wrap; gap: 2px; }
+.topbar nav a {
+  color: #d0d7de;
+  text-decoration: none;
+  padding: 16px 12px;
+  border-bottom: 3px solid transparent;
+}
+.topbar nav a.on { color: #fff; font-weight: 700; border-bottom-color: var(--accent); }
+.topbar nav a.soon { color: #8b949e; }
+.topbar .year { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+main { padding: 20px; max-width: 1800px; margin: 0 auto; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 17px; margin: 24px 0 8px; }
+.sub { color: var(--ink-soft); margin: 0 0 16px; }
+
+/* 입력 요소 */
+select, input, textarea, button { font: inherit; }
+select, input[type='text'], input[type='search'], input[type='date'], input[type='number'], textarea {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: #fff;
+  color: var(--ink);
+}
+textarea { width: 100%; min-height: 64px; resize: vertical; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--muted-soft); color: var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn.primary:hover { background: #e0941a; }
+.btn.danger { color: var(--danger); border-color: #f1b5b1; }
+.btn.small { min-height: 30px; padding: 3px 10px; font-size: 13px; }
+
+/* 필터 줄 */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.filters label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ink-soft); }
+.filters .grow { flex: 1 1 220px; }
+.filters .grow input { width: 100%; }
+.filters .actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; }
+
+.stats { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--ink-soft); margin: 0 0 8px; font-size: 13px; }
+.stats b { color: var(--ink); }
+
+/* 엑셀형 표 */
+.table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line-soft); border-radius: 8px; }
+table.sheet { border-collapse: collapse; width: 100%; min-width: 1400px; font-size: 13px; }
+table.sheet th {
+  position: sticky;
+  top: 0;
+  background: #eceae4;
+  border: 1px solid #cfcbc1;
+  padding: 7px 6px;
+  text-align: left;
+  font-weight: 700;
+  white-space: nowrap;
+}
+table.sheet td { border: 1px solid var(--line-soft); padding: 6px; vertical-align: top; }
+table.sheet tr:hover td { background: #fffaf0; }
+table.sheet td.num, table.sheet th.num { text-align: center; white-space: nowrap; }
+table.sheet tr.hidden-row td { background: var(--muted-soft); color: var(--ink-soft); }
+table.sheet .hazard { min-width: 260px; }
+table.sheet .wide { min-width: 200px; }
+table.sheet .mid { min-width: 110px; }
+table.sheet .nowrap { white-space: nowrap; }
+.risk-high { background: var(--danger-soft) !important; color: var(--danger); font-weight: 700; }
+.risk-top { background: #f9c7c3 !important; color: #7a1212; font-weight: 700; }
+
+.chip { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.chip.new { background: #ddf4ff; color: #0a3069; }
+.chip.edit { background: #fff1d6; color: #7a4100; }
+.chip.old { background: var(--muted-soft); color: var(--ink-soft); }
+.chip.hidden { background: #424a53; color: #fff; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+
+/* 상세/편집 폼 */
+.card { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 16px; }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-soft); }
+.form-grid label > span b { color: var(--danger); }
+.form-grid .span2 { grid-column: span 2; }
+.form-grid .span4 { grid-column: 1 / -1; }
+.form-grid input, .form-grid select { width: 100%; }
+.score-box { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.score-box output { font-size: 20px; font-weight: 700; min-width: 32px; text-align: center; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.notice { background: var(--accent-soft); border: 1px solid #f0b46b; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; }
+.photos { display: flex; flex-wrap: wrap; gap: 12px; }
+.photos figure { margin: 0; width: 220px; }
+.photos img { width: 220px; height: 165px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line-soft); background: var(--muted-soft); }
+.photos figcaption { font-size: 12px; color: var(--ink-soft); }
+.history li { margin-bottom: 4px; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  main { padding: 12px; }
+}
