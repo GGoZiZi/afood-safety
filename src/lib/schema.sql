@@ -225,3 +225,74 @@ CREATE TABLE IF NOT EXISTS case_seen (
   case_id  INTEGER NOT NULL,
   PRIMARY KEY (user_id, case_id)
 );
+
+-- ===== 3단계: 순회점검 · 근로자 참여 =====
+
+-- 순회점검 (한 번 돌 때마다 하나)
+CREATE TABLE IF NOT EXISTS patrols (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  year        INTEGER NOT NULL,
+  date        TEXT NOT NULL,
+  area        TEXT,                            -- 점검 구역
+  inspector   TEXT,
+  note        TEXT,
+  created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+-- 사진 한 장 = 지적사항 하나. 위험성평가에 등록하면 risk_item_id가 생긴다
+CREATE TABLE IF NOT EXISTS patrol_findings (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  patrol_id     INTEGER NOT NULL REFERENCES patrols(id) ON DELETE CASCADE,
+  photo         TEXT,                          -- data/photos 안의 파일명
+  process_code  TEXT,
+  location      TEXT,
+  finding       TEXT,                          -- 지적 내용 (유해위험요인)
+  measure       TEXT,                          -- 개선 대책
+  owner         TEXT,
+  due_date      TEXT,
+  done_date     TEXT,
+  after_photo   TEXT,
+  decision      TEXT NOT NULL DEFAULT '미정',  -- 미정 / 등록 / 미등록
+  risk_item_id  INTEGER REFERENCES risk_items(id),
+  created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+-- 근로자 위험성평가 참여: 근로자별 담당 공정과 근로자가 매긴 점수·의견
+CREATE TABLE IF NOT EXISTS participants (
+  id      INTEGER PRIMARY KEY AUTOINCREMENT,
+  year    INTEGER NOT NULL,
+  name    TEXT NOT NULL,
+  lang    TEXT NOT NULL DEFAULT 'ko',
+  dept    TEXT,
+  sort    INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (year, name)
+);
+
+CREATE TABLE IF NOT EXISTS participant_processes (
+  participant_id  INTEGER NOT NULL REFERENCES participants(id) ON DELETE CASCADE,
+  process_code    TEXT NOT NULL,
+  PRIMARY KEY (participant_id, process_code)
+);
+
+CREATE TABLE IF NOT EXISTS participation_scores (
+  participant_id  INTEGER NOT NULL REFERENCES participants(id) ON DELETE CASCADE,
+  risk_item_id    INTEGER NOT NULL REFERENCES risk_items(id),
+  likelihood      INTEGER,
+  severity        INTEGER,
+  opinion         TEXT,
+  reflected       INTEGER NOT NULL DEFAULT 0,  -- 위험성평가에 반영함
+  updated_at      TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  PRIMARY KEY (participant_id, risk_item_id)
+);
+
+-- 위험성평가 항목 번역 (근로자 참여 엑셀의 외국어 시트에서 가져옴)
+CREATE TABLE IF NOT EXISTS risk_translations (
+  year          INTEGER NOT NULL,
+  item_code     TEXT NOT NULL,
+  lang          TEXT NOT NULL,
+  space         TEXT,
+  process_name  TEXT,
+  sub_task      TEXT,
+  hazard        TEXT,
+  PRIMARY KEY (year, item_code, lang)
+);

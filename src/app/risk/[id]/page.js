@@ -58,7 +58,7 @@ export default async function RiskDetail({ params, searchParams }) {
       <div className="card">
         <h2 style={{ marginTop: 0 }}>사진 ({photos.length})</h2>
         {photos.length === 0 ? (
-          <p className="sub">연결된 사진이 없습니다. 사진 업로드는 순회점검 단계에서 추가됩니다.</p>
+          <p className="sub">연결된 사진이 없습니다. 개선조치 화면에서 개선 후 사진을, 순회점검에서 현장 사진을 올릴 수 있습니다.</p>
         ) : (
           <div className="photos">
             {photos.map((p) => (
