@@ -5,6 +5,8 @@ import { migrate } from './migrate.mjs';
 
 // 데이터 파일 위치. 기본값은 프로젝트의 data/afood.db (백업은 이 파일만 복사하면 된다)
 export const DATA_DIR = process.env.AFOOD_DATA_DIR || path.join(process.cwd(), 'data');
+// 사진 폴더. 기본: data/photos
+export const PHOTO_DIR = process.env.AFOOD_PHOTO_DIR || path.join(DATA_DIR, 'photos');
 const DB_PATH = path.join(DATA_DIR, 'afood.db');
 const SCHEMA_PATH = path.join(process.cwd(), 'src', 'lib', 'schema.sql');
 
