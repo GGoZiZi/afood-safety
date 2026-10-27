@@ -11,14 +11,15 @@ const clean = (v) => {
   const s = v == null ? '' : String(v).trim();
   return s === '' ? null : s;
 };
-const KINDS = ['equipment', 'msds', 'regulation'];
+const KINDS = ['equipment', 'msds', 'regulation', 'measurement'];
+const ADMIN_ONLY = { regulation: '실시규정', measurement: '작업환경측정 결과표' };
 
-// 설비·MSDS·실시규정 공용 첨부. back: 저장 후 새로 고칠 화면 주소
+// 설비·MSDS·실시규정·작업환경측정 공용 첨부. back: 저장 후 새로 고칠 화면 주소
 export async function uploadDocument(formData) {
   const user = await requireUser();
   const kind = String(formData.get('owner_kind'));
   if (!KINDS.includes(kind)) throw new Error('잘못된 문서 종류입니다.');
-  if (kind === 'regulation' && user.role !== 'admin') throw new Error('실시규정은 관리자만 올릴 수 있습니다.');
+  if (ADMIN_ONLY[kind] && user.role !== 'admin') throw new Error(`${ADMIN_ONLY[kind]}는 관리자만 올릴 수 있습니다.`);
   const file = formData.get('file');
   const name = await saveFile(file);
   if (!name) throw new Error('파일을 골라 주세요.');

@@ -14,6 +14,7 @@ const MENU = [
   { href: '/equipment', label: '설비·안전인증' },
   { href: '/msds', label: 'MSDS' },
   { href: '/regulations', label: '실시규정' },
+  { href: '/health', label: '보건관리' },
   { href: '/cases', label: '재해사례' },
   { href: '/budget', label: '예산' },
   { href: '/years', label: '연도 관리' },
