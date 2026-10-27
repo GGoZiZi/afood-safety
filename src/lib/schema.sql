@@ -296,3 +296,72 @@ CREATE TABLE IF NOT EXISTS risk_translations (
   hazard        TEXT,
   PRIMARY KEY (year, item_code, lang)
 );
+
+-- ===== 4단계: 설비·안전인증 · MSDS · 문서 =====
+
+-- 설비 (안전인증 / 자율안전확인 / 안전검사 대상 포함). 점검주기마다 다음 점검일을 계산한다
+CREATE TABLE IF NOT EXISTS equipment (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  name            TEXT NOT NULL,                 -- 설비명
+  location        TEXT,                          -- 장소 (커트밋, HMR …)
+  maker           TEXT,                          -- 업체
+  model           TEXT,
+  serial_no       TEXT,
+  cert_type       TEXT NOT NULL DEFAULT '해당없음', -- 안전인증 / 자율안전확인 / 안전검사 / 해당없음
+  cert_no         TEXT,                          -- 인증·신고번호
+  install_date    TEXT,
+  cycle_months    INTEGER,                       -- 점검주기 (개월)
+  owner           TEXT,                          -- 담당자 (기본: 공무파트)
+  process_code    TEXT,
+  photo           TEXT,
+  note            TEXT,
+  active          INTEGER NOT NULL DEFAULT 1,
+  created_at      TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS equipment_inspections (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  equipment_id  INTEGER NOT NULL REFERENCES equipment(id) ON DELETE CASCADE,
+  date          TEXT NOT NULL,
+  kind          TEXT NOT NULL DEFAULT '정기점검',  -- 정기점검 / 안전검사 / 수리 / 기타
+  inspector     TEXT,
+  result        TEXT NOT NULL DEFAULT '양호',      -- 양호 / 보완필요 / 불량
+  note          TEXT,
+  photo         TEXT,
+  created_by    TEXT,
+  created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+-- MSDS 대장
+CREATE TABLE IF NOT EXISTS msds (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  no            INTEGER,
+  name          TEXT NOT NULL,                 -- 화학물질명(제품명)
+  msds_no       TEXT,
+  purpose       TEXT,                          -- 사용목적
+  supplier      TEXT,                          -- 제조사 또는 공급사
+  mixture       TEXT,                          -- 순수물질 / 혼합물
+  components    TEXT,                          -- 구성성분 (한 줄에 "성분명 | CAS | 함유량")
+  place         TEXT,                          -- 사용공정(구역명)
+  monthly_use   TEXT,
+  measure_note  TEXT,                          -- 작업환경측정 특이사항
+  revised_on    TEXT,                          -- MSDS 개정일
+  posted        INTEGER NOT NULL DEFAULT 0,    -- 현장 게시 여부
+  active        INTEGER NOT NULL DEFAULT 1,
+  updated_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+-- 첨부 문서 (MSDS 원본, 인증서, 실시규정 등). owner_kind + owner_id 로 어디에 붙었는지 표시
+CREATE TABLE IF NOT EXISTS documents (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  owner_kind    TEXT NOT NULL,                 -- equipment / msds / regulation
+  owner_id      INTEGER,
+  title         TEXT NOT NULL,
+  filename      TEXT NOT NULL,                 -- data/files 안의 파일명
+  original_name TEXT,
+  version       TEXT,
+  effective_on  TEXT,
+  note          TEXT,
+  uploaded_by   TEXT,
+  uploaded_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);

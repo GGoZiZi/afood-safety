@@ -7,6 +7,8 @@ import { migrate } from './migrate.mjs';
 export const DATA_DIR = process.env.AFOOD_DATA_DIR || path.join(process.cwd(), 'data');
 // 사진 폴더. 기본: data/photos
 export const PHOTO_DIR = process.env.AFOOD_PHOTO_DIR || path.join(DATA_DIR, 'photos');
+// 첨부 문서 폴더 (PDF 등). 기본: data/files
+export const FILE_DIR = process.env.AFOOD_FILE_DIR || path.join(DATA_DIR, 'files');
 const DB_PATH = path.join(DATA_DIR, 'afood.db');
 const SCHEMA_PATH = path.join(process.cwd(), 'src', 'lib', 'schema.sql');
 
