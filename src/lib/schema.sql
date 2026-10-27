@@ -365,3 +365,43 @@ CREATE TABLE IF NOT EXISTS documents (
   uploaded_by   TEXT,
   uploaded_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
+
+-- ===== 4단계: 위험성평가 예산 =====
+
+CREATE TABLE IF NOT EXISTS budget_plans (
+  year      INTEGER NOT NULL,
+  category  TEXT NOT NULL,                     -- 구분 (공장안전시설 검사비용 …)
+  sort      INTEGER NOT NULL DEFAULT 0,
+  planned   INTEGER,                           -- 편성액
+  detail    TEXT,                              -- 편성내역
+  PRIMARY KEY (year, category)
+);
+
+-- 비고에 이 낱말이 들어 있으면 그 구분으로 분류 (priority 작은 것부터)
+CREATE TABLE IF NOT EXISTS budget_rules (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  keyword   TEXT NOT NULL UNIQUE,
+  category  TEXT NOT NULL,                     -- 또는 '제외'
+  priority  INTEGER NOT NULL DEFAULT 100
+);
+
+-- 집행 내역. ERP 계정내역은 (전표번호, 비고) 하나가 한 건
+CREATE TABLE IF NOT EXISTS budget_entries (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  year        INTEGER NOT NULL,
+  date        TEXT NOT NULL,
+  voucher     TEXT,                            -- 전표번호 (직접 입력은 비어 있음)
+  memo        TEXT NOT NULL,                   -- 비고
+  vendor      TEXT,
+  dept        TEXT,
+  accounts    TEXT,                            -- 계정명
+  amount      INTEGER NOT NULL,                -- 비용(공급가)
+  vat         INTEGER NOT NULL DEFAULT 0,      -- 부가세
+  category    TEXT,
+  status      TEXT NOT NULL DEFAULT '자동',    -- 자동 / 검토 / 확인 / 제외
+  rule        TEXT,                            -- 분류에 쓴 낱말
+  source      TEXT NOT NULL DEFAULT 'erp',     -- erp / 직접
+  note        TEXT,
+  created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  UNIQUE (voucher, memo)
+);

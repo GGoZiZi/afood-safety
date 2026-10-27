@@ -62,6 +62,8 @@ h2 { font-size: 17px; margin: 24px 0 8px; }
 
 /* 입력 요소 */
 select, input, textarea, button { font: inherit; }
+select { max-width: 100%; text-overflow: ellipsis; }
+.filters label, .form-grid label { min-width: 0; max-width: 100%; }
 select, input[type='text'], input[type='search'], input[type='date'], input[type='number'], textarea {
   border: 1px solid var(--line);
   border-radius: 6px;
