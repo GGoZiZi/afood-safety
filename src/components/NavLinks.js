@@ -15,7 +15,7 @@ const MENU = [
   { href: '/msds', label: 'MSDS' },
   { href: '/regulations', label: '실시규정' },
   { href: '/cases', label: '재해사례' },
-  { href: '/budget', label: '예산', soon: true },
+  { href: '/budget', label: '예산' },
   { href: '/years', label: '연도 관리' },
   { href: '/users', label: '사용자' },
 ];
