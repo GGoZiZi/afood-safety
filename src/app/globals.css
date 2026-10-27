@@ -184,3 +184,10 @@ table.sheet .nowrap { white-space: nowrap; }
 .decision { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px; border-radius: 8px; background: var(--muted-soft); margin-top: 10px; }
 .diff { background: var(--accent-soft); }
 @media (max-width: 700px) { .finding { grid-template-columns: 1fr; } }
+
+/* 보건관리 하위 탭 */
+.subtabs { display: flex; gap: 4px; flex-wrap: wrap; margin: 0 0 14px; border-bottom: 1px solid var(--line-soft); }
+.subtabs a { padding: 7px 12px; color: var(--ink-soft); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.subtabs a.on { color: var(--ink); font-weight: 700; border-bottom-color: var(--accent); }
+.checks { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+.checks label { flex-direction: row !important; align-items: center; gap: 4px; color: var(--ink) !important; }

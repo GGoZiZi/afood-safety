@@ -405,3 +405,87 @@ CREATE TABLE IF NOT EXISTS budget_entries (
   created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   UNIQUE (voucher, memo)
 );
+
+-- ===== 4단계: 보건관리 (건강진단 · 작업환경측정 · 보호구) =====
+
+-- 건강진단 대상자. 직원 명부와 따로 둔다 (협력사·퇴사자도 검진 명단에 있을 수 있음)
+CREATE TABLE IF NOT EXISTS health_people (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  dept           TEXT,
+  name           TEXT NOT NULL,
+  birth          TEXT,                         -- 생년월일 (YYYY-MM-DD). 주민번호 뒷자리는 저장하지 않는다
+  sex            TEXT,                         -- 남 / 여
+  phone          TEXT,
+  hire_date      TEXT,
+  night_work     INTEGER NOT NULL DEFAULT 0,   -- 야간작업 특수건강진단 대상
+  general        INTEGER NOT NULL DEFAULT 1,   -- 일반건강진단 대상
+  general_cycle  INTEGER NOT NULL DEFAULT 12,  -- 사무직 24개월, 그 외 12개월
+  agents         TEXT,                         -- 특수건강진단 유해인자 (한 줄에 하나)
+  special_cycle  INTEGER NOT NULL DEFAULT 12,
+  food_cert      INTEGER NOT NULL DEFAULT 1,   -- 보건증(식품위생 건강진단) 대상
+  note           TEXT,
+  active         INTEGER NOT NULL DEFAULT 1,
+  UNIQUE (name, birth)
+);
+
+CREATE TABLE IF NOT EXISTS health_exams (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  person_id      INTEGER NOT NULL REFERENCES health_people(id) ON DELETE CASCADE,
+  kind           TEXT NOT NULL,                -- 일반 / 특수 / 배치전 / 수시 / 보건증
+  date           TEXT NOT NULL,
+  agency         TEXT,                         -- 검진기관
+  result         TEXT,                         -- 판정 (A, C1, C2, CN, D1, D2, DN, R, U / 보건증: 적합, 부적합)
+  followup       TEXT,                         -- 사후관리 조치
+  followup_done  INTEGER NOT NULL DEFAULT 0,
+  created_by     TEXT,
+  created_at     TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  UNIQUE (person_id, kind, date)
+);
+
+-- 작업환경측정 (상반기/하반기 한 번이 한 건). 결과표 PDF는 documents (owner_kind 'measurement')
+CREATE TABLE IF NOT EXISTS measurements (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  year        INTEGER NOT NULL,
+  half        TEXT NOT NULL,                   -- 상반기 / 하반기
+  date        TEXT NOT NULL,
+  agency      TEXT,
+  note        TEXT,
+  created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  UNIQUE (year, half)
+);
+
+CREATE TABLE IF NOT EXISTS measurement_results (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  measurement_id  INTEGER NOT NULL REFERENCES measurements(id) ON DELETE CASCADE,
+  place           TEXT,                        -- 부서·공정
+  agent           TEXT NOT NULL,               -- 유해인자
+  value           REAL,
+  limit_value     REAL,                        -- 노출기준
+  unit            TEXT,
+  note            TEXT
+);
+
+-- 보호구 품목과 입고·지급 기록. 재고 = 입고 - 지급 - 폐기
+CREATE TABLE IF NOT EXISTS ppe_items (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  name            TEXT NOT NULL UNIQUE,
+  kind            TEXT,                        -- 안전화, 보안경, 방진마스크 …
+  cert_no         TEXT,                        -- 안전인증번호
+  replace_months  INTEGER,                     -- 교체주기 (개월)
+  min_stock       INTEGER NOT NULL DEFAULT 0,
+  note            TEXT,
+  active          INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS ppe_moves (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id     INTEGER NOT NULL REFERENCES ppe_items(id) ON DELETE CASCADE,
+  date        TEXT NOT NULL,
+  kind        TEXT NOT NULL,                   -- 입고 / 지급 / 폐기
+  qty         INTEGER NOT NULL,
+  person      TEXT,                            -- 받은 사람
+  dept        TEXT,
+  note        TEXT,
+  created_by  TEXT,
+  created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
